@@ -13,28 +13,31 @@ describe('Home', () => {
   const mockProducts = {
     products: [
       {
-        id: 1, title: 'ProductA', thumbnail: "test.jpg", price: 200
+        id: 1,
+        title: 'ProductA',
+        thumbnail: 'test.jpg',
+        price: 200,
       },
       {
-        id: 2, title: 'ProductB', thumbnail: "test2.jpg", price: 200
-      }
+        id: 2,
+        title: 'ProductB',
+        thumbnail: 'test2.jpg',
+        price: 200,
+      },
     ],
     total: 2,
-  }
+  };
 
   const mockCategories = ['electronics', 'beauty'];
-
 
   beforeEach(async () => {
     mockProductService = {
       getProducts: vi.fn().mockReturnValue(of(mockProducts)),
-      getProductCategoriesList: vi.fn().mockReturnValue(of(mockCategories))
-    }
+      getProductCategoriesList: vi.fn().mockReturnValue(of(mockCategories)),
+    };
     await TestBed.configureTestingModule({
       imports: [Home],
-      providers: [
-        { provide: ProductService, useValue: mockProductService }
-      ]
+      providers: [{ provide: ProductService, useValue: mockProductService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Home);
@@ -51,40 +54,52 @@ describe('Home', () => {
       const category = 'electronics';
       component.setActiveCategory(category);
       expect(component.currentActiveCategory).toBe(category);
-      expect(mockProductService.getProducts).toHaveBeenCalledWith({ category: category });
-    })
+      expect(mockProductService.getProducts).toHaveBeenCalledWith({
+        page: 0,
+        category: category,
+        search: null,
+      });
+    });
 
     it('should reset category to null when "all" is selected', () => {
       component.setActiveCategory('all');
       expect(component.currentActiveCategory).toBe('all');
-      expect(mockProductService.getProducts).toHaveBeenCalledWith({ category: null });
-    })
+      expect(mockProductService.getProducts).toHaveBeenCalledWith({
+        page: 0,
+        category: null,
+        search: null,
+      });
+    });
   });
 
   describe('Search Functionality', () => {
-    let testScheduler: TestScheduler
+    let testScheduler: TestScheduler;
     beforeEach(() => {
       testScheduler = new TestScheduler((actual, expected) => {
         expect(actual).toBe(expected);
-      })
-    })
+      });
+    });
 
     it('should debounce search input and show clear using TestScheduler', () => {
       testScheduler.run(({ flush }) => {
         component.searchInputControl.setValue('apple');
-        flush()
-        expect(component.showClearButton).toBe(true)
-        expect(mockProductService.getProducts).toHaveBeenCalledWith({ search: 'apple' });
-      })
-    })
+        flush();
+        expect(component.showClearButton).toBe(true);
+        expect(mockProductService.getProducts).toHaveBeenCalledWith({
+          page: 0,
+          category: null,
+          search: 'apple',
+        });
+      });
+    });
 
     it('should clear search when clearSearch is called', () => {
       component.searchInputControl.setValue('apple');
-      component.clearSearch()
+      component.clearSearch();
       expect(component.searchInputControl.value).toBe(null);
-      expect(component.showClearButton).toBe(false)
-    })
-  })
+      expect(component.showClearButton).toBe(false);
+    });
+  });
 
   describe('Template Rendering', () => {
     it('should display the correct number of products', () => {
@@ -92,7 +107,7 @@ describe('Home', () => {
       fixture.detectChanges();
       const productItems = compiled.querySelectorAll('.product-item');
       expect(productItems.length).toBe(2);
-      expect(compiled.querySelector('.product-name')?.textContent).toContain('ProductA')
+      expect(compiled.querySelector('.product-name')?.textContent).toContain('ProductA');
     });
     it('should show loading state when product$ is null', async () => {
       mockProductService.getProducts.mockReturnValue(of(null));
@@ -109,6 +124,6 @@ describe('Home', () => {
       expect(loadingContainer).not.toBeNull();
       expect(loadingContainer?.textContent).toContain('Loading...');
       expect(productList).toBeNull();
-    })
-  })
+    });
+  });
 });
