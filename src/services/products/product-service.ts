@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
-import { ProductListResponse } from './product-types';
+import { Product, ProductListResponse } from './product-types';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +17,10 @@ export class ProductService {
       this.http.get<ProductListResponse>(`${this.BASE_URL}/products/category/${data.category}?limit=${limit}&skip=${skip}`) :
       data.search && data.search !== null ?
         this.http.get<ProductListResponse>(`${this.BASE_URL}/products/search?q=${data.search}&limit=${limit}&skip=${skip}`) : this.http.get<ProductListResponse>(`${this.BASE_URL}/products?limit=${limit}&skip=${skip}`)
+  }
+
+  getProductById(id: number) {
+    return this.http.get<Product>(`${this.BASE_URL}/products/${id}`);
   }
 
   getProductCategoriesList() {

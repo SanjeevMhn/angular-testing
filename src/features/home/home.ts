@@ -1,6 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
@@ -18,7 +19,7 @@ import { ProductListResponse } from '../../services/products/product-types';
 
 @Component({
   selector: 'app-home',
-  imports: [AsyncPipe, ReactiveFormsModule],
+  imports: [AsyncPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

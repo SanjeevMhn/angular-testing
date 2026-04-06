@@ -1,0 +1,5 @@
+@if(productId$ | async){
+    @if(product$ | async; as detail){
+        <pre>{{detail | json}}</pre>
+    }
+}

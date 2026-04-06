@@ -6,35 +6,22 @@
   <div class="product-list-container flex gap-[2.5rem] h-[calc(100vh-9rem)] flex-col lg:flex-row">
     <aside class="product-control-section lg:flex-[0_0_28rem] flex flex-col gap-[2.5rem]">
       <div class="product-search relative">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 640 640"
-          class="text-neutral-500 w-[1.5rem] h-[1.5rem] flex items-center justify-center absolute left-[1rem] top-[50%] translate-y-[-50%] fill-neutral-500"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"
+          class="text-neutral-500 w-[1.5rem] h-[1.5rem] flex items-center justify-center absolute left-[1rem] top-[50%] translate-y-[-50%] fill-neutral-500">
           <path
-            d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"
-          />
+            d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z" />
         </svg>
-        <input
-          type="text"
-          name=""
-          id=""
+        <input type="text" name="" id=""
           class="form-control border border-neutral-500 p-[1rem_3.2rem] text-neutral-700 text-[1.6rem] w-full"
-          placeholder="Search products..."
-          [formControl]="searchInputControl"
-        />
+          placeholder="Search products..." [formControl]="searchInputControl" />
         @if (showClearButton) {
-          <button type="button" class="cursor-pointer" (click)="clearSearch()">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 640 640"
-              class="text-neutral-500 w-[1.5rem] h-[1.5rem] flex items-center justify-center absolute right-[1rem] top-[50%] translate-y-[-50%] fill-neutral-500"
-            >
-              <path
-                d="M504.6 148.5C515.9 134.9 514.1 114.7 500.5 103.4C486.9 92.1 466.7 93.9 455.4 107.5L320 270L184.6 107.5C173.3 93.9 153.1 92.1 139.5 103.4C125.9 114.7 124.1 134.9 135.4 148.5L278.3 320L135.4 491.5C124.1 505.1 125.9 525.3 139.5 536.6C153.1 547.9 173.3 546.1 184.6 532.5L320 370L455.4 532.5C466.7 546.1 486.9 547.9 500.5 536.6C514.1 525.3 515.9 505.1 504.6 491.5L361.7 320L504.6 148.5z"
-              />
-            </svg>
-          </button>
+        <button type="button" class="cursor-pointer" (click)="clearSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"
+            class="text-neutral-500 w-[1.5rem] h-[1.5rem] flex items-center justify-center absolute right-[1rem] top-[50%] translate-y-[-50%] fill-neutral-500">
+            <path
+              d="M504.6 148.5C515.9 134.9 514.1 114.7 500.5 103.4C486.9 92.1 466.7 93.9 455.4 107.5L320 270L184.6 107.5C173.3 93.9 153.1 92.1 139.5 103.4C125.9 114.7 124.1 134.9 135.4 148.5L278.3 320L135.4 491.5C124.1 505.1 125.9 525.3 139.5 536.6C153.1 547.9 173.3 546.1 184.6 532.5L320 370L455.4 532.5C466.7 546.1 486.9 547.9 500.5 536.6C514.1 525.3 515.9 505.1 504.6 491.5L361.7 320L504.6 148.5z" />
+          </svg>
+        </button>
         }
       </div>
       <div class="categories-list-container flex flex-col lg:gap-[2rem] lg:pb-[2.5rem]">
@@ -42,75 +29,61 @@
           Categories
         </h2>
         @if (categoryList$ | async; as categories) {
-          <ul class="categories-list flex lg:flex-col gap-[1.2rem] overflow-x-auto">
-            <li
-              class="category-item cursor-pointer p-[1.2rem] lg:p-0 whitespace-nowrap"
-              [class.text-green-700]="currentActiveCategory == 'all'"
-              (click)="setActiveCategory('all')"
-            >
-              All Items
-            </li>
-            @for (category of categories; track category) {
-              <li
-                class="category-item capitalize cursor-pointer p-[1.2rem] lg:p-0 whitespace-nowrap"
-                [class.text-green-700]="currentActiveCategory == category"
-                (click)="setActiveCategory(category)"
-              >
-                {{ category }}
-              </li>
-            }
-          </ul>
+        <ul class="categories-list flex lg:flex-col gap-[1.2rem] overflow-x-auto">
+          <li class="category-item cursor-pointer p-[1.2rem] lg:p-0 whitespace-nowrap"
+            [class.text-green-700]="currentActiveCategory == 'all'" (click)="setActiveCategory('all')">
+            All Items
+          </li>
+          @for (category of categories; track category) {
+          <li class="category-item capitalize cursor-pointer p-[1.2rem] lg:p-0 whitespace-nowrap"
+            [class.text-green-700]="currentActiveCategory == category" (click)="setActiveCategory(category)">
+            {{ category }}
+          </li>
+          }
+        </ul>
         }
       </div>
     </aside>
     <div class="main-products-section grow flex flex-col gap-[2.5rem] pb-[2.5rem]">
       @if (products$ | async; as data) {
-        <header class="product-list-info flex items-center justify-between">
-          <p class="">Showing {{ data.products.length }} of {{ data.total }} products</p>
-        </header>
-        <ul
-          class="product-list grid grid-cols-[repeat(auto-fill,minmax(min(30rem,100%),1fr))] gap-[2.5rem]"
-        >
-          @for (product of data.products; track product.id) {
-            <li class="product-item flex flex-col gap-[1.5rem]">
-              <div
-                class="img-container aspect-1/2 overflow-hidden rounded-md max-h-[35rem] bg-mauve-400"
-              >
-                <img [src]="product.thumbnail" alt="" class="w-full h-full object-cover" />
-              </div>
-              <div class="details grid grid-cols-3 gap-[1.5rem]">
-                <h2 class="product-name row-[1] col-[1/span_2] text-[1.8rem] font-medium">
-                  {{ product.title }}
-                </h2>
-                <p class="price row-[1] col-[3] text-[2rem] font-semibold justify-self-end">
-                  ${{ product.price }}
-                </p>
-              </div>
-            </li>
-          }
-        </ul>
-        <nav class="pagination flex items-center justify-center gap-[1rem] mt-[2rem]">
-          <button
-            type="button"
-            class="pagination-btn px-[1.5rem] py-[0.8rem] border border-neutral-400 rounded-md cursor-pointer transition-colors hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            [disabled]="currentPage === 1"
-            (click)="prevPage()"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            class="pagination-btn px-[1.5rem] py-[0.8rem] border border-neutral-400 rounded-md cursor-pointer transition-colors hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            [disabled]="currentPage === totalPages"
-            (click)="nextPage()"
-          >
-            Next
-          </button>
-        </nav>
+      <header class="product-list-info flex items-center justify-between">
+        <p class="">Showing {{ data.products.length }} of {{ data.total }} products</p>
+      </header>
+      <ul class="product-list grid grid-cols-[repeat(auto-fill,minmax(min(30rem,100%),1fr))] gap-[2.5rem]">
+        @for (product of data.products; track product.id) {
+        <li class="product-item ">
+          <a [routerLink]="['/product-detail', product.id]" class="flex flex-col gap-[1.5rem]">
+            <div class="img-container aspect-1/2 overflow-hidden rounded-md max-h-[35rem] bg-mauve-400">
+              <img [src]="product.thumbnail" alt="" class="w-full h-full object-cover" />
+            </div>
+            <div class="details grid grid-cols-3 gap-[1.5rem]">
+              <h2 class="product-name row-[1] col-[1/span_2] text-[1.8rem] font-medium">
+                {{ product.title }}
+              </h2>
+              <p class="price row-[1] col-[3] text-[2rem] font-semibold justify-self-end">
+                ${{ product.price }}
+              </p>
+            </div>
+          </a>
+        </li>
+        }
+      </ul>
+      <nav class="pagination flex items-center justify-center gap-[1rem] mt-[2rem]">
+        <button type="button"
+          class="pagination-btn px-[1.5rem] py-[0.8rem] border border-neutral-400 rounded-md cursor-pointer transition-colors hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="currentPage === 1" (click)="prevPage()">
+          Previous
+        </button>
+        <button type="button"
+          class="pagination-btn px-[1.5rem] py-[0.8rem] border border-neutral-400 rounded-md cursor-pointer transition-colors hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="currentPage === totalPages" (click)="nextPage()">
+          Next
+        </button>
+      </nav>
       } @else {
-        <div class="loading-container flex items-center justify-center">
-          <h2 class="text-orange-400 text-[5rem] font-bold font-mono">Loading...</h2>
-        </div>
+      <div class="loading-container flex items-center justify-center">
+        <h2 class="text-orange-400 text-[5rem] font-bold font-mono">Loading...</h2>
+      </div>
       }
     </div>
   </div>
