@@ -1,30 +1,35 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  filter,
   map,
+  merge,
   Observable,
   startWith,
   Subject,
   switchMap,
-  tap,
+  tap
 } from 'rxjs';
 import { ProductService } from '../../services/products/product-service';
 import { ProductListResponse } from '../../services/products/product-types';
 
 @Component({
   selector: 'app-home',
-  imports: [AsyncPipe, ReactiveFormsModule, RouterLink],
+  imports: [AsyncPipe, ReactiveFormsModule, RouterLink, NgTemplateOutlet],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home {
   productService = inject(ProductService);
+  route = inject(ActivatedRoute)
+  router = inject(Router)
+
   searchInputControl = new FormControl('');
   searchText = this.searchInputControl.valueChanges.pipe(
     debounceTime(800),
@@ -47,12 +52,25 @@ export class Home {
   activeCategorySubject = new Subject<{ category: String | null }>();
   pageNumber = new BehaviorSubject<{ page: number }>({ page: 0 });
 
+  categoryParam$ = this.route.queryParams.pipe(
+    filter(data => data['category']),
+    map(params => {
+      return { category: params['category'] }
+    }),
+  )
+  activeCategory$ = merge(this.categoryParam$, this.activeCategorySubject).pipe(
+    tap(data => {
+      this.currentActiveCategory = data.category
+    })
+  )
+
   products$: Observable<ProductListResponse | null> = combineLatest([
     this.pageNumber,
-    this.activeCategorySubject.pipe(startWith(null)),
+    this.activeCategory$.pipe(startWith(null)),
     this.searchText.pipe(startWith(null)),
   ]).pipe(
     switchMap(([page, category, search]) => {
+      console.log(category, search)
       return this.productService.getProducts({
         page: (page as any)?.page ?? 0,
         category: (category as any)?.category ?? null,
@@ -113,5 +131,13 @@ export class Home {
 
   clearSearch() {
     this.searchInputControl.reset();
+  }
+
+  clearFilters() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {}, // Set to empty
+      queryParamsHandling: null, // This is the default, it replaces existing params
+    });
   }
 }

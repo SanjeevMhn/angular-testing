@@ -1,0 +1,8 @@
+<div class="rating-container flex items-center gap-[0.25rem]">
+@for(star of getRatingStars(); track star){
+    <span >⭐</span>
+}
+@for(star of getEmptyStars(); track star){
+    <span class="grayscale-100">⭐</span>
+}
+</div>
