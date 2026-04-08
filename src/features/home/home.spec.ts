@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 import { ProductService } from '../../services/products/product-service';
 import { Home } from './home';
+import { ActivatedRoute } from '@angular/router';
 
 describe('Home', () => {
   let component: Home;
@@ -29,6 +30,7 @@ describe('Home', () => {
   };
 
   const mockCategories = ['electronics', 'beauty'];
+  const mockQueryParams = new BehaviorSubject<{ category: string | null }>({ category: null })
 
   beforeEach(async () => {
     mockProductService = {
@@ -37,7 +39,12 @@ describe('Home', () => {
     };
     await TestBed.configureTestingModule({
       imports: [Home],
-      providers: [{ provide: ProductService, useValue: mockProductService }],
+      providers: [{ provide: ProductService, useValue: mockProductService }, {
+        provide: ActivatedRoute,
+        useValue: {
+          queryParams: mockQueryParams.asObservable()
+        }
+      }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Home);
@@ -47,6 +54,53 @@ describe('Home', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('Query Params', () => {
+    let testScheduler: TestScheduler;
+    beforeEach(() => {
+      testScheduler = new TestScheduler((actual, expected) => {
+        expect(actual).toBe(expected);
+      });
+    });
+    it('should filter product by category if category query params exists', () => {
+      mockQueryParams.next({ category: 'beauty' })
+      component.categoryParam$.subscribe(data => {
+        expect(data.category).toBe('beauty')
+      })
+      component.activeCategory$.subscribe(data => {
+        expect(data.category).toBe('beauty')
+      })
+      expect(component.currentActiveCategory).toBe('beauty')
+      expect(mockProductService.getProducts).toHaveBeenCalledWith({
+        page: 0,
+        category: 'beauty',
+        search: null
+      })
+    })
+
+    it('should remove category query params from url in case user searches for product', () => {
+      mockQueryParams.next({ category: 'beauty' })
+      const clearFilters = vi.spyOn(component, 'clearFilters')
+      testScheduler.run(({ flush }) => {
+        component.searchInputControl.setValue('apple')
+        flush()
+        expect(clearFilters).toHaveBeenCalled()
+        expect(mockProductService.getProducts).toHaveBeenLastCalledWith({
+          page: 0,
+          category: null,
+          search: 'apple'
+        })
+      })
+    })
+
+    it('should remove category query params from url in case click on categories in the sidebar', () => {
+      mockQueryParams.next({category: 'beauty'})
+      const clearFilters = vi.spyOn(component, 'clearFilters')
+      component.setActiveCategory('furniture')
+      expect(clearFilters).toHaveBeenCalled()
+    })
+
   });
 
   describe('Category Selection', () => {

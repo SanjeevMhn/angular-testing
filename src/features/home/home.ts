@@ -22,7 +22,7 @@ import { ProductListResponse } from '../../services/products/product-types';
 
 @Component({
   selector: 'app-home',
-  imports: [AsyncPipe, ReactiveFormsModule, RouterLink, NgTemplateOutlet],
+  imports: [AsyncPipe, ReactiveFormsModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -36,7 +36,7 @@ export class Home implements OnDestroy {
   readonly searchInputControl = new FormControl('');
   activeCategorySubject = new Subject<{ category: string | null }>();
   pageNumber = new BehaviorSubject<{ page: number }>({ page: 0 });
-  private readonly categoryParam$ = new BehaviorSubject<{ category: string | null }>({ category: null });
+  readonly categoryParam$ = new BehaviorSubject<{ category: string | null }>({ category: null });
   private readonly destroy$ = new Subject<void>();
 
   // UI State
@@ -52,7 +52,7 @@ export class Home implements OnDestroy {
   readonly searchText: Observable<{ search: string | null }> = this.searchInputControl.valueChanges.pipe(
     debounceTime(800),
     distinctUntilChanged(),
-    tap(() => this.#clearFilters()),
+    tap(() => this.clearFilters()),
     map((data) => ({ search: data })),
     tap((data) => {
       this.pageNumber.next({ page: 0 });
@@ -128,6 +128,7 @@ export class Home implements OnDestroy {
 
   setActiveCategory(cat: string): void {
     this.currentActiveCategory = cat;
+    this.clearFilters()
     if (cat === 'all') {
       this.activeCategorySubject.next({ category: null });
     } else {
@@ -152,7 +153,7 @@ export class Home implements OnDestroy {
     }
   }
 
-  #clearFilters(): void {
+  clearFilters(): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
