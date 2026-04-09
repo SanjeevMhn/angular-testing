@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProductDetail } from './product-detail';
-import { ActivatedRoute } from '@angular/router';
-import { ProductService } from '../../services/products/product-service';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { Rating } from '../../components/rating/rating';
+import { ProductService } from '../../services/products/product-service';
+import { ProductDetail } from './product-detail';
 
 describe('ProductDetail', () => {
   let component: ProductDetail;
@@ -71,12 +71,8 @@ describe('ProductDetail', () => {
       'https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/thumbnail.webp',
   };
 
-  const createParamMap = (params: { id: string }): any => ({
-    get: (key: string) => params[key as keyof typeof params] || null,
-  });
-
   beforeEach(async () => {
-    mockParams = new BehaviorSubject(createParamMap({ id: '1' }));
+    mockParams = new BehaviorSubject(convertToParamMap({ id: '1' }));
     mockProductService = {
       getProductById: vi.fn().mockReturnValue(of(mockProduct)),
     };
@@ -108,7 +104,7 @@ describe('ProductDetail', () => {
 
   it('should push the correct product id from route to productSubject', async () => {
     const expectedId = 5;
-    mockParams.next(createParamMap({ id: String(expectedId) }));
+    mockParams.next(convertToParamMap({ id: String(expectedId) }));
     await fixture.whenStable();
     const value = component.productSubject.getValue();
     expect(value).toBe(expectedId);
@@ -116,7 +112,7 @@ describe('ProductDetail', () => {
 
   it('product$ should emit product data for the given id', async () => {
     const testId = 2;
-    mockParams.next(createParamMap({ id: String(testId) }));
+    mockParams.next(convertToParamMap({ id: String(testId) }));
     await fixture.whenStable();
 
     component.product$.subscribe((product) => {
