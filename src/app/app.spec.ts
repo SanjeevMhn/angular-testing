@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { App } from './app';
 
 describe('App', () => {
@@ -7,6 +8,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [provideRouter([])],
     }).compileComponents();
     fixture = TestBed.createComponent(App);
     app = fixture.componentInstance;
@@ -17,9 +19,9 @@ describe('App', () => {
   });
 
   it('should contain main-container div', () => {
-    fixture.detectChanges()
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const mainContainer = compiled.querySelector('.main-container')
-    expect(mainContainer).toBeTruthy()
-  })
+    const mainContainer = compiled.querySelector('.main-container');
+    expect(mainContainer).toBeTruthy();
+  });
 });

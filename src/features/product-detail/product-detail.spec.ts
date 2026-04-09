@@ -13,69 +13,72 @@ describe('ProductDetail', () => {
 
   const mockProduct = {
     id: 2,
-    title: "Eyeshadow Palette with Mirror",
-    description: "The Eyeshadow Palette with Mirror offers a versatile range of eyeshadow shades for creating stunning eye looks. With a built-in mirror, it's convenient for on-the-go makeup application.",
-    category: "beauty",
+    title: 'Eyeshadow Palette with Mirror',
+    description:
+      "The Eyeshadow Palette with Mirror offers a versatile range of eyeshadow shades for creating stunning eye looks. With a built-in mirror, it's convenient for on-the-go makeup application.",
+    category: 'beauty',
     price: 19.99,
     discountPercentage: 18.19,
     rating: 2.86,
     stock: 34,
-    tags: [
-      "beauty",
-      "eyeshadow"
-    ],
-    brand: "Glamour Beauty",
-    sku: "BEA-GLA-EYE-002",
+    tags: ['beauty', 'eyeshadow'],
+    brand: 'Glamour Beauty',
+    sku: 'BEA-GLA-EYE-002',
     weight: 9,
     dimensions: {
       width: 9.26,
       height: 22.47,
-      depth: 27.67
+      depth: 27.67,
     },
-    warrantyInformation: "1 year warranty",
-    shippingInformation: "Ships in 2 weeks",
-    availabilityStatus: "In Stock",
+    warrantyInformation: '1 year warranty',
+    shippingInformation: 'Ships in 2 weeks',
+    availabilityStatus: 'In Stock',
     reviews: [
       {
         rating: 5,
-        comment: "Great product!",
-        date: "2025-04-30T09:41:02.053Z",
-        reviewerName: "Savannah Gomez",
-        reviewerEmail: "savannah.gomez@x.dummyjson.com"
+        comment: 'Great product!',
+        date: '2025-04-30T09:41:02.053Z',
+        reviewerName: 'Savannah Gomez',
+        reviewerEmail: 'savannah.gomez@x.dummyjson.com',
       },
       {
         rating: 4,
-        comment: "Awesome product!",
-        date: "2025-04-30T09:41:02.053Z",
-        reviewerName: "Christian Perez",
-        reviewerEmail: "christian.perez@x.dummyjson.com"
+        comment: 'Awesome product!',
+        date: '2025-04-30T09:41:02.053Z',
+        reviewerName: 'Christian Perez',
+        reviewerEmail: 'christian.perez@x.dummyjson.com',
       },
       {
         rating: 1,
-        comment: "Poor quality!",
-        date: "2025-04-30T09:41:02.053Z",
-        reviewerName: "Nicholas Bailey",
-        reviewerEmail: "nicholas.bailey@x.dummyjson.com"
-      }
+        comment: 'Poor quality!',
+        date: '2025-04-30T09:41:02.053Z',
+        reviewerName: 'Nicholas Bailey',
+        reviewerEmail: 'nicholas.bailey@x.dummyjson.com',
+      },
     ],
-    returnPolicy: "7 days return policy",
+    returnPolicy: '7 days return policy',
     minimumOrderQuantity: 20,
     meta: {
-      createdAt: "2025-04-30T09:41:02.053Z",
-      updatedAt: "2025-04-30T09:41:02.053Z",
-      barcode: "9170275171413",
-      qrCode: "https://cdn.dummyjson.com/public/qr-code.png"
+      createdAt: '2025-04-30T09:41:02.053Z',
+      updatedAt: '2025-04-30T09:41:02.053Z',
+      barcode: '9170275171413',
+      qrCode: 'https://cdn.dummyjson.com/public/qr-code.png',
     },
     images: [
-      "https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/1.webp"
+      'https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/1.webp',
     ],
-    thumbnail: "https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/thumbnail.webp"
+    thumbnail:
+      'https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/thumbnail.webp',
   };
 
+  const createParamMap = (params: { id: string }): any => ({
+    get: (key: string) => params[key as keyof typeof params] || null,
+  });
+
   beforeEach(async () => {
-    mockParams = new BehaviorSubject({ id: 1 });
+    mockParams = new BehaviorSubject(createParamMap({ id: '1' }));
     mockProductService = {
-      getProductById: vi.fn().mockReturnValue(of(mockProduct))
+      getProductById: vi.fn().mockReturnValue(of(mockProduct)),
     };
 
     await TestBed.configureTestingModule({
@@ -85,13 +88,13 @@ describe('ProductDetail', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: mockParams.asObservable(),
-          }
+          },
         },
         {
           provide: ProductService,
-          useValue: mockProductService
-        }
-      ]
+          useValue: mockProductService,
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductDetail);
@@ -103,38 +106,31 @@ describe('ProductDetail', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should push the correct product id from route to productSubject', () => {
+  it('should push the correct product id from route to productSubject', async () => {
     const expectedId = 5;
-    mockParams.next({ id: expectedId });
-    // Wait for the observable logic to trigger:
-    setTimeout(() => {
-      // Take the latest value from the subject
-      const value = component.productSubject.getValue();
-      expect(value).toBe(expectedId);
-
-    }, 0);
+    mockParams.next(createParamMap({ id: String(expectedId) }));
+    await fixture.whenStable();
+    const value = component.productSubject.getValue();
+    expect(value).toBe(expectedId);
   });
 
-  it('product$ should emit product data for the given id', () => {
+  it('product$ should emit product data for the given id', async () => {
     const testId = 2;
-    // mockProductService.getProductById.mockReturnValue(of(mockProduct));
-    mockParams.next({ id: testId })
-    setTimeout(() => {
-      component.product$.subscribe(product => {
-        expect(mockProductService.getProductById).toHaveBeenCalledWith(testId);
-        expect(product).toEqual(mockProduct);
+    mockParams.next(createParamMap({ id: String(testId) }));
+    await fixture.whenStable();
 
-      });
-    }, 0);
+    component.product$.subscribe((product) => {
+      expect(mockProductService.getProductById).toHaveBeenCalledWith(testId);
+      expect(product).toEqual(mockProduct);
+    });
   });
 
-  it('product$ should emit null when productSubject is null', () => {
+  it('product$ should emit null when productSubject is null', async () => {
     component.productSubject.next(null);
-    setTimeout(() => {
-      component.product$.subscribe(product => {
-        expect(product).toBeNull();
-      });
-    }, 0);
-  });
+    await fixture.whenStable();
 
+    component.product$.subscribe((product) => {
+      expect(product).toBeNull();
+    });
+  });
 });
