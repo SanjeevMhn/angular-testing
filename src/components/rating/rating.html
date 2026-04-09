@@ -1,8 +1,8 @@
 <div class="rating-container flex items-center gap-[0.25rem]">
-@for(star of getRatingStars(); track star){
-    <span >⭐</span>
-}
-@for(star of getEmptyStars(); track star * 2){
+  @for (star of getRatingStars(); track $index) {
+    <span>⭐</span>
+  }
+  @for (star of getEmptyStars(); track $index) {
     <span class="grayscale-100">⭐</span>
-}
+  }
 </div>
