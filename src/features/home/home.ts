@@ -1,4 +1,4 @@
-import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnDestroy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -67,6 +67,7 @@ export class Home implements OnDestroy {
     this.activeCategorySubject,
   ).pipe(
     tap((categoryData) => {
+      this.pageNumber.next({page: 0})
       this.currentActiveCategory = categoryData.category !== null ? categoryData.category : 'all';
     }),
   );
