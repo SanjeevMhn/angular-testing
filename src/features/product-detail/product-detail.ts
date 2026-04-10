@@ -2,8 +2,9 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BehaviorSubject, map, of, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { Rating } from "../../components/rating/rating";
+import { Rating } from '../../components/rating/rating';
 import { ProductService } from '../../services/products/product-service';
+import { FavoritesService } from '../../services/favorites/favorites.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -12,34 +13,44 @@ import { ProductService } from '../../services/products/product-service';
   styleUrl: './product-detail.css',
 })
 export class ProductDetail implements OnDestroy {
+  readonly route = inject(ActivatedRoute);
+  readonly productService = inject(ProductService);
+  readonly favoritesService = inject(FavoritesService);
+  readonly productSubject = new BehaviorSubject<number | null>(null);
 
-  readonly route = inject(ActivatedRoute)
-  readonly productService = inject(ProductService)
-  readonly productSubject = new BehaviorSubject<number | null>(null)
-
-  private readonly destroy$ = new Subject<void>()
-  activeImgIndex = signal(0)
+  private readonly destroy$ = new Subject<void>();
+  activeImgIndex = signal(0);
 
   constructor() {
-    this.route.paramMap.pipe(
-      map(params => params.get('id')),
-      takeUntil(this.destroy$)).subscribe(id => {
-        this.productSubject.next(Number(id))
-      })
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((id) => {
+        this.productSubject.next(Number(id));
+      });
   }
 
   readonly product$ = this.productSubject.pipe(
     switchMap((id) => {
       if (id == null) {
-        return of(null)
+        return of(null);
       }
-      return this.productService.getProductById(id)
-    })
-  )
+      return this.productService.getProductById(id);
+    }),
+  );
 
   ngOnDestroy(): void {
-    this.destroy$.next()
-    this.destroy$.complete()
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  toggleFavorite(product: any): void {
+    this.favoritesService.toggle(product);
+  }
+
+  isFavorite(productId: number): boolean {
+    return this.favoritesService.isFavorite(productId);
+  }
 }
