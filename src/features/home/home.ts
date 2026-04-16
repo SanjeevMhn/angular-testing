@@ -4,14 +4,11 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BehaviorSubject,
-  combineLatest,
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
-  merge,
   Observable,
-  startWith,
   Subject,
   switchMap,
   takeUntil,
@@ -20,6 +17,12 @@ import {
 import { ProductService } from '../../services/products/product-service';
 import { ProductListResponse } from '../../services/products/product-types';
 
+interface FilterState {
+  page: number;
+  category: string | null;
+  search: string | null;
+}
+
 @Component({
   selector: 'app-home',
   imports: [AsyncPipe, ReactiveFormsModule, RouterLink],
@@ -27,99 +30,96 @@ import { ProductListResponse } from '../../services/products/product-types';
   styleUrl: './home.css',
 })
 export class Home implements OnDestroy {
-  // Dependencies
   private readonly productService = inject(ProductService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // State Controls
   readonly searchInputControl = new FormControl('');
-  activeCategorySubject = new Subject<{ category: string | null }>();
-  pageNumber = new BehaviorSubject<{ page: number }>({ page: 0 });
-  readonly categoryParam$ = new BehaviorSubject<{ category: string | null }>({ category: null });
+  private readonly filterState = new BehaviorSubject<FilterState>({
+    page: 0,
+    category: null,
+    search: null,
+  });
   private readonly destroy$ = new Subject<void>();
 
-  // UI State
   showClearButton = false;
   currentActiveCategory: string = 'all';
 
-  // Pagination State
   private readonly currentPageData = { skip: 0, limit: 6 };
   totalPages = 0;
   currentPage = 1;
 
-  // Search text Observable, manages filter/clear/filter state
-  readonly searchText: Observable<{ search: string | null }> = this.searchInputControl.valueChanges.pipe(
-    debounceTime(800),
-    distinctUntilChanged(),
-    tap(() => this.clearFilters()),
-    map((data) => ({ search: data })),
-    tap((data) => {
-      this.pageNumber.next({ page: 0 });
-      this.showClearButton = data.search !== '' && data.search !== null;
-      this.currentActiveCategory = 'all';
-    }),
-  );
-
-  // Category from param or user interaction (category select)
-  readonly activeCategory$: Observable<{ category: string | null }> = merge(
-    this.categoryParam$,
-    this.activeCategorySubject,
-  ).pipe(
-    tap((categoryData) => {
-      this.pageNumber.next({page: 0})
-      this.currentActiveCategory = categoryData.category !== null ? categoryData.category : 'all';
-    }),
-  );
-
-  // Products (page, filter, search triggered)
-  readonly products$: Observable<ProductListResponse | null> = combineLatest([
-    this.pageNumber,
-    this.activeCategory$.pipe(startWith(null)),
-    this.searchText.pipe(startWith(null)),
-  ]).pipe(
-    switchMap(([page, category, search]) => {
-      return this.productService.getProducts({
-        page: (page as any)?.page ?? 0,
-        category: (category as any)?.category ?? null,
-        search: (search as any)?.search ?? null,
-      });
-    }),
+  readonly products$: Observable<ProductListResponse | null> = this.filterState.pipe(
+    debounceTime(300),
+    distinctUntilChanged(
+      (prev, curr) =>
+        prev.page === curr.page && prev.category === curr.category && prev.search === curr.search,
+    ),
+    switchMap((state) =>
+      this.productService.getProducts({
+        page: state.page,
+        category: state.category,
+        search: state.search,
+      }),
+    ),
     tap((data) => this.#updatePagination(data)),
   );
 
-  // All available categories
-  readonly categoryList$: Observable<Array<string>> = this.productService.getProductCategoriesList();
+  readonly categoryList$: Observable<Array<string>> =
+    this.productService.getProductCategoriesList();
 
   constructor() {
     this.route.queryParams
       .pipe(
         filter((data) => data['category']),
-        map((params) => ({ category: params['category'] })),
+        map((params) => params['category']),
         takeUntil(this.destroy$),
       )
-      .subscribe((data) => this.categoryParam$.next(data));
+      .subscribe((category) => {
+        this.currentActiveCategory = category;
+        this.filterState.next({
+          page: 0,
+          category: category,
+          search: null,
+        });
+      });
+
+    this.searchInputControl.valueChanges
+      .pipe(debounceTime(800), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((search) => {
+        const currentState = this.filterState.getValue();
+        this.filterState.next({
+          page: 0,
+          category: null,
+          search: search || null,
+        });
+        this.showClearButton = search !== '' && search !== null;
+        this.currentActiveCategory = 'all';
+      });
   }
 
   // Pagination helpers
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.pageNumber.next({ page: this.currentPage - 1 });
+      const currentState = this.filterState.getValue();
+      this.filterState.next({ ...currentState, page: this.currentPage - 1 });
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.pageNumber.next({ page: this.currentPage - 1 });
+      const currentState = this.filterState.getValue();
+      this.filterState.next({ ...currentState, page: this.currentPage - 1 });
     }
   }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPageData.skip = (page - 1) * this.currentPageData.limit;
-      this.pageNumber.next({ page: this.currentPageData.skip });
+      const currentState = this.filterState.getValue();
+      this.filterState.next({ ...currentState, page: this.currentPageData.skip });
     }
   }
 
@@ -129,23 +129,30 @@ export class Home implements OnDestroy {
 
   setActiveCategory(cat: string): void {
     this.currentActiveCategory = cat;
-    this.clearFilters()
-    if (cat === 'all') {
-      this.activeCategorySubject.next({ category: null });
-    } else {
-      this.activeCategorySubject.next({ category: cat });
-    }
+    const currentState = this.filterState.getValue();
+    this.filterState.next({
+      page: 0,
+      category: cat === 'all' ? null : cat,
+      search: null,
+    });
+    this.clearFilters();
   }
 
   clearSearch(): void {
     this.searchInputControl.reset();
+    const currentState = this.filterState.getValue();
+    this.filterState.next({
+      ...currentState,
+      page: 0,
+      search: null,
+    });
+    this.showClearButton = false;
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-
 
   #updatePagination(data: ProductListResponse | null): void {
     if (data) {
@@ -160,6 +167,5 @@ export class Home implements OnDestroy {
       queryParams: {},
       queryParamsHandling: null,
     });
-    this.categoryParam$.next({ category: null });
   }
 }

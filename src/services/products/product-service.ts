@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { Product, ProductListResponse } from './product-types';
 
@@ -9,6 +10,8 @@ import { Product, ProductListResponse } from './product-types';
 export class ProductService {
   private BASE_URL = environment.baseUrl
   private http = inject(HttpClient)
+
+  private categoryCache$?: Observable<Array<string>>;
 
   getProducts(data: { page?: number, category?: string | null, search?: string | null } = { page: 0, category: null, search: null }) {
     const limit = 6;
@@ -24,7 +27,10 @@ export class ProductService {
   }
 
   getProductCategoriesList() {
-    return this.http.get<Array<string>>(`${this.BASE_URL}/products/category-list`)
+    if (!this.categoryCache$) {
+      this.categoryCache$ = this.http.get<Array<string>>(`${this.BASE_URL}/products/category-list`).pipe(shareReplay(1))
+    }
+    return this.categoryCache$;
   }
 
 }
